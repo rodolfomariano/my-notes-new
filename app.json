@@ -1,0 +1,10 @@
+{
+  "expo": {
+    "name": "my-note-new",
+    "slug": "my-note-new",
+    "version": "1.0.0",
+    "assetBundlePatterns": [
+      "**/*"
+    ]
+  }
+}
