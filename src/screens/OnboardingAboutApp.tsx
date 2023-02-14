@@ -1,4 +1,5 @@
 import { Dimensions } from "react-native";
+import { useNavigation } from "@react-navigation/native";
 
 import {
   ScrollView,
@@ -18,10 +19,18 @@ import { AntDesign } from "@expo/vector-icons";
 import ButtonDesignSvg from "@assets/button-design.svg";
 import GirlWriting from "@assets/girl-writing.svg";
 
+import { OnboardingNavigationRoutesProps } from "@routes/onboarding.routes";
+
 import { OnboardingProgressIndicator } from "@components/OnboardingProgressIndicator";
 
 export function OnboardingAboutApp() {
   const { width } = Dimensions.get("window");
+
+  const navigation = useNavigation<OnboardingNavigationRoutesProps>();
+
+  function handleGoBack() {
+    navigation.goBack();
+  }
 
   return (
     <ScrollView
@@ -43,6 +52,7 @@ export function OnboardingAboutApp() {
           leftIcon={
             <Icon as={AntDesign} name="arrowleft" color="primary.200" />
           }
+          onPress={handleGoBack}
         >
           <Text color="primary.200">Voltar</Text>
         </Button>

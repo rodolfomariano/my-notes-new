@@ -1,18 +1,31 @@
-import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import {
+  createNativeStackNavigator,
+  NativeStackNavigationProp,
+} from "@react-navigation/native-stack";
+
 import { OnboardingAboutApp } from "@screens/OnboardingAboutApp";
 import { OnboardingWelcome } from "@screens/OnboardingWelcome";
+import { Box } from "native-base";
 
-const { Navigator, Screen } = createNativeStackNavigator();
+type OnboardingRoutesProps = {
+  onBoardingWelcome: undefined;
+  onBoardingAboutApp: undefined;
+};
+
+export type OnboardingNavigationRoutesProps =
+  NativeStackNavigationProp<OnboardingRoutesProps>;
+
+const { Navigator, Screen } =
+  createNativeStackNavigator<OnboardingRoutesProps>();
 
 export function OnboardingRoutes() {
   return (
-    <Navigator
-      screenOptions={{ headerShown: false }}
-      initialRouteName="onBoardingAboutApp"
-    >
-      <Screen name="onBoardingWelcome" component={OnboardingWelcome} />
+    <Box flex={1} bg="primary.400">
+      <Navigator screenOptions={{ headerShown: false }}>
+        <Screen name="onBoardingWelcome" component={OnboardingWelcome} />
 
-      <Screen name="onBoardingAboutApp" component={OnboardingAboutApp} />
-    </Navigator>
+        <Screen name="onBoardingAboutApp" component={OnboardingAboutApp} />
+      </Navigator>
+    </Box>
   );
 }

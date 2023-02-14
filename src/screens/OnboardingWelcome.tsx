@@ -1,4 +1,5 @@
 import { Dimensions } from "react-native";
+import { useNavigation } from "@react-navigation/native";
 
 import {
   ScrollView,
@@ -17,10 +18,18 @@ import { AntDesign } from "@expo/vector-icons";
 
 import WelcomeImageSvg from "@assets/welcome-image.svg";
 import ButtonDesignSvg from "@assets/button-design.svg";
+
 import { OnboardingProgressIndicator } from "@components/OnboardingProgressIndicator";
+import { OnboardingNavigationRoutesProps } from "@routes/onboarding.routes";
 
 export function OnboardingWelcome() {
   const { width } = Dimensions.get("window");
+
+  const navigation = useNavigation<OnboardingNavigationRoutesProps>();
+
+  function handleNextOnboardingScreen() {
+    navigation.navigate("onBoardingAboutApp");
+  }
 
   return (
     <ScrollView
@@ -82,6 +91,7 @@ export function OnboardingWelcome() {
                 w={16}
                 h={16}
                 rounded="full"
+                onPress={handleNextOnboardingScreen}
               />
             </Center>
           </VStack>
