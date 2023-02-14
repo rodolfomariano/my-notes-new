@@ -13,6 +13,7 @@ import {
 import { THEME } from "@theme/index";
 import { SignIn } from "@screens/SignIn";
 import { SignUp } from "@screens/SignUp";
+import { Routes } from "@routes/index";
 
 export default function App() {
   const [fontsLoaded] = useFonts({
@@ -24,7 +25,7 @@ export default function App() {
 
   return (
     <NativeBaseProvider theme={THEME}>
-      {!fontsLoaded ? <></> : <SignUp />}
+      {!fontsLoaded ? <></> : <Routes />}
     </NativeBaseProvider>
   );
 }

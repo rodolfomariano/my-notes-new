@@ -2,13 +2,15 @@ import {
   Box,
   Button,
   Center,
-  FormControl,
   Icon,
   Image,
   ScrollView,
   Text,
   VStack,
 } from "native-base";
+
+import { useNavigation } from "@react-navigation/native";
+import { PublicNavigatorRoutesProps } from "@routes/public.routes";
 
 import { AntDesign } from "@expo/vector-icons";
 
@@ -20,6 +22,12 @@ import { SubmitButton } from "@components/SubmitButton";
 import { ButtonRecoverPassword } from "@components/ButtonRecoverPassword";
 
 export function SignIn() {
+  const navigation = useNavigation<PublicNavigatorRoutesProps>();
+
+  function handleGoToSignUp() {
+    navigation.navigate("signUp");
+  }
+
   return (
     <ScrollView
       contentContainerStyle={{ flexGrow: 1 }}
@@ -86,6 +94,7 @@ export function SignIn() {
               px={0}
               py={0}
               _pressed={{ bg: "primary.200" }}
+              onPress={handleGoToSignUp}
             >
               <Text color="primary.400" fontSize="xl" fontWeight="medium">
                 Criar conta

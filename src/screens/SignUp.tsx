@@ -1,14 +1,14 @@
 import {
-  Box,
   Button,
   Center,
-  FormControl,
   Icon,
   Image,
   ScrollView,
   Text,
   VStack,
 } from "native-base";
+
+import { useNavigation } from "@react-navigation/native";
 
 import { Entypo } from "@expo/vector-icons";
 
@@ -17,9 +17,14 @@ import EllipsePng from "@assets/ellipse.png";
 
 import { Input } from "@components/Input";
 import { SubmitButton } from "@components/SubmitButton";
-import { ButtonRecoverPassword } from "@components/ButtonRecoverPassword";
 
 export function SignUp() {
+  const navigation = useNavigation();
+
+  function handleGoBackToSignIn() {
+    navigation.goBack();
+  }
+
   return (
     <ScrollView
       contentContainerStyle={{ flexGrow: 1 }}
@@ -37,6 +42,7 @@ export function SignUp() {
             p={0}
             my={6}
             mr="auto"
+            onPress={handleGoBackToSignIn}
           >
             <Text color="primary.400">Fazer login</Text>
           </Button>

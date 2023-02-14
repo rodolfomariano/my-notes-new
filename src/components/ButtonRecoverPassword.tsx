@@ -1,3 +1,5 @@
+import { Dimensions } from "react-native";
+
 import {
   Button,
   Text,
@@ -6,7 +8,7 @@ import {
   Heading,
   VStack,
 } from "native-base";
-import { Dimensions } from "react-native";
+
 import { Input } from "./Input";
 import { SubmitButton } from "./SubmitButton";
 
