@@ -25,7 +25,7 @@ export function ButtonRecoverPassword({ ...rest }: ButtonRecoverPassword) {
           py={2}
           w={32}
           {...rest}
-          _pressed={{ bg: "primary.200" }}
+          _pressed={{ bg: "primary.100" }}
         >
           <Text color="gray.400" fontSize="xs">
             Esqueci a senha
