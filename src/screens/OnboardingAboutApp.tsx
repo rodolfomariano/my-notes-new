@@ -32,6 +32,10 @@ export function OnboardingAboutApp() {
     navigation.goBack();
   }
 
+  function handleGoToChooseLeftOrRightScreen() {
+    navigation.navigate("onboardingChooseLeftOrRight");
+  }
+
   return (
     <ScrollView
       contentContainerStyle={{ flexGrow: 1 }}
@@ -96,6 +100,7 @@ export function OnboardingAboutApp() {
                 w={16}
                 h={16}
                 rounded="full"
+                onPress={handleGoToChooseLeftOrRightScreen}
               />
             </Center>
           </VStack>

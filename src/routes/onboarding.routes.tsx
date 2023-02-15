@@ -4,12 +4,14 @@ import {
 } from "@react-navigation/native-stack";
 
 import { OnboardingAboutApp } from "@screens/OnboardingAboutApp";
+import { OnboardingChooseLeftOrRight } from "@screens/OnboardingChooseLeftOrRight";
 import { OnboardingWelcome } from "@screens/OnboardingWelcome";
 import { Box } from "native-base";
 
 type OnboardingRoutesProps = {
   onBoardingWelcome: undefined;
   onBoardingAboutApp: undefined;
+  onboardingChooseLeftOrRight: undefined;
 };
 
 export type OnboardingNavigationRoutesProps =
@@ -25,6 +27,11 @@ export function OnboardingRoutes() {
         <Screen name="onBoardingWelcome" component={OnboardingWelcome} />
 
         <Screen name="onBoardingAboutApp" component={OnboardingAboutApp} />
+
+        <Screen
+          name="onboardingChooseLeftOrRight"
+          component={OnboardingChooseLeftOrRight}
+        />
       </Navigator>
     </Box>
   );
