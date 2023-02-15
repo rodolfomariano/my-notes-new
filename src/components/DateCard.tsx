@@ -1,12 +1,15 @@
 import { Dimensions } from "react-native";
 import { Center, Pressable, IPressableProps, Text } from "native-base";
+import { getToday } from "@utils/getWeekDays";
+import { Dayjs } from "dayjs";
 
 interface DateCardProps extends IPressableProps {
   month: string;
   weekDay: string;
-  day: string;
+  day: number;
   isToday?: boolean;
   isSelected?: boolean;
+  date: Dayjs;
 }
 
 export function DateCard({
@@ -15,12 +18,14 @@ export function DateCard({
   weekDay,
   isToday,
   isSelected = false,
-
+  date,
   ...rest
 }: DateCardProps) {
   const { width } = Dimensions.get("window");
 
   const cardWidth = width / 7;
+
+  const today = getToday();
 
   return (
     <Pressable
@@ -31,6 +36,8 @@ export function DateCard({
       rounded="md"
       borderWidth="1px"
       borderColor={isSelected ? "primary.500" : "indigo.200"}
+      disabled={date > today}
+      _disabled={{ opacity: 0.7 }}
       overflow="hidden"
       _pressed={{ opacity: 0.8 }}
       {...rest}

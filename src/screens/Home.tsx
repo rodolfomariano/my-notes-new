@@ -1,29 +1,54 @@
 import { useState } from "react";
-import { StatusBar } from "react-native";
+
+import { Dayjs } from "dayjs";
+
+import {
+  NativeScrollEvent,
+  NativeSyntheticEvent,
+  StatusBar,
+} from "react-native";
 
 import { Box, FlatList, Text, VStack } from "native-base";
+
+import {
+  getCurrencyWeekDays,
+  getLastWeek,
+  getNextWeek,
+  getToday,
+} from "@utils/getWeekDays";
+
+import {
+  formatFullDate,
+  getDay,
+  getDayOfWeek,
+  getMonth,
+} from "@utils/formatDates";
 
 import { Header } from "@components/Header";
 import { DateCard } from "@components/DateCard";
 
-const dates = [
-  { month: "jan", weekDay: "dom", day: "21" },
-  { month: "jan", weekDay: "seg", day: "22" },
-  { month: "jan", weekDay: "ter", day: "23" },
-  { month: "jan", weekDay: "qua", day: "24" },
-  { month: "jan", weekDay: "qui", day: "25" },
-  { month: "jan", weekDay: "sex", day: "26" },
-  { month: "jan", weekDay: "sab", day: "27" },
-];
-
 export function Home() {
-  const [daySelected, setDaySelected] = useState("");
+  const [daySelected, setDaySelected] = useState<Dayjs>(getToday());
+  const [today, setToday] = useState<Dayjs>(getToday());
+  const [days, setDays] = useState<Dayjs[]>(getCurrencyWeekDays());
 
-  function handleSelectDate(day: string) {
+  function handleSelectDate(day: Dayjs) {
     setDaySelected(day);
   }
 
-  console.log(daySelected);
+  function handleScrollToRight(event: NativeSyntheticEvent<NativeScrollEvent>) {
+    if (event.nativeEvent.contentOffset.x === 0) {
+      const daysOfLastWeek = getLastWeek(days[0]);
+
+      return setDays((state) => [...daysOfLastWeek, ...state]);
+    }
+  }
+
+  function handleScrollToLeft() {
+    const daysOfNextWeek = getNextWeek(days[days.length - 1]);
+
+    return setDays((state) => [...state, ...daysOfNextWeek]);
+  }
 
   return (
     <VStack flex={1} bg="primary.100">
@@ -37,20 +62,27 @@ export function Home() {
 
       <Box flex={1} maxH={20} bg="indigo.200" py="5px" pl={1} pr={1}>
         <FlatList
-          data={dates}
-          keyExtractor={(item) => item.day}
-          renderItem={({ item }) => (
-            <DateCard
-              month={item.month}
-              weekDay={item.weekDay}
-              day={item.day}
-              isToday={item.day === "24"}
-              isSelected={daySelected === item.day}
-              onPress={() => handleSelectDate(item.day)}
-            />
-          )}
+          data={days}
+          keyExtractor={(item) => item.toString()}
+          renderItem={({ item }) => {
+            return (
+              <DateCard
+                month={getMonth(item)}
+                weekDay={getDayOfWeek(item)}
+                day={getDay(item)}
+                date={item}
+                isToday={
+                  item.format("DD/MM/YYYY") === today.format("DD/MM/YYYY")
+                }
+                isSelected={daySelected === item}
+                onPress={() => handleSelectDate(item)}
+              />
+            );
+          }}
           horizontal
           showsHorizontalScrollIndicator={false}
+          onScroll={handleScrollToRight}
+          onEndReached={handleScrollToLeft}
         />
       </Box>
 
@@ -59,7 +91,7 @@ export function Home() {
       </Text>
 
       <Text textAlign="center" fontSize={20} color="primary.400">
-        {daySelected}
+        {formatFullDate(daySelected)}
       </Text>
     </VStack>
   );

@@ -1,3 +1,4 @@
+import "./src/libs/dayjs";
 import React from "react";
 
 import { NativeBaseProvider } from "native-base";
