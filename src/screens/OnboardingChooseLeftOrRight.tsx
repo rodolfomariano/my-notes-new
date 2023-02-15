@@ -5,12 +5,9 @@ import {
   ScrollView,
   VStack,
   StatusBar,
-  Box,
   Button,
   Center,
-  IconButton,
   Icon,
-  Heading,
   Text,
   HStack,
 } from "native-base";
@@ -20,14 +17,12 @@ import { AntDesign } from "@expo/vector-icons";
 import LeftHandSvg from "@assets/left-hand.svg";
 import RightHandSvg from "@assets/right-hand.svg";
 
-import { OnboardingNavigationRoutesProps } from "@routes/onboarding.routes";
-
 import { OnboardingProgressIndicator } from "@components/OnboardingProgressIndicator";
 
 export function OnboardingChooseLeftOrRight() {
   const { width } = Dimensions.get("window");
 
-  const navigation = useNavigation<OnboardingNavigationRoutesProps>();
+  const navigation = useNavigation();
 
   function handleGoBack() {
     navigation.goBack();
