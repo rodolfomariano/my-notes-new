@@ -1,7 +1,9 @@
 import { Dimensions } from "react-native";
 import { Center, Pressable, IPressableProps, Text } from "native-base";
-import { getToday } from "@utils/getWeekDays";
+
 import { Dayjs } from "dayjs";
+
+import { getToday } from "@utils/getWeekDays";
 
 interface DateCardProps extends IPressableProps {
   month: string;

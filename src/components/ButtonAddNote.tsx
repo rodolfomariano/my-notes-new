@@ -42,7 +42,8 @@ export function ButtonAddNote({ date, ...rest }: ButtonAddNoteProps) {
         variant="solid"
         w={12}
         h={12}
-        colorScheme="purple"
+        bg="primary.400"
+        _pressed={{ bg: "primary.500" }}
         shadow="2"
         onPress={() => setShowModalNewNote(true)}
         {...rest}

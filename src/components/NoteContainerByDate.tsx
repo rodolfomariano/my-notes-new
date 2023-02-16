@@ -184,6 +184,7 @@ export function NoteContainerByDate() {
                   if (note.item.type === item) {
                     return (
                       <NoteCard
+                        id={note.item.id}
                         title={note.item.title}
                         type={note.item.type as TypesProps}
                       />

@@ -1,3 +1,5 @@
+import { useNavigation } from "@react-navigation/native";
+
 import {
   HStack,
   Icon,
@@ -14,12 +16,15 @@ import LikeHandSvg from "@assets/like-hand.svg";
 import RegularSvg from "@assets/regular.svg";
 import NoLikeHandSvg from "@assets/no-like-hand.svg";
 
+import { AppRoutesNavigationProps } from "@routes/app.routes";
+
 interface NoteCardProps extends IPressableProps {
+  id: string;
   title: string;
   type: "good" | "regular" | "bad";
 }
 
-export function NoteCard({ title, type, ...rest }: NoteCardProps) {
+export function NoteCard({ id, title, type, ...rest }: NoteCardProps) {
   const { colors } = useTheme();
 
   const colorByType =
@@ -28,6 +33,12 @@ export function NoteCard({ title, type, ...rest }: NoteCardProps) {
       : type === "regular"
       ? colors.rose[400]
       : colors.warning[400];
+
+  const navigation = useNavigation<AppRoutesNavigationProps>();
+
+  function handleSeeDetailsOsNote() {
+    return navigation.navigate("noteDetail", { id: id });
+  }
 
   return (
     <Pressable
@@ -39,6 +50,7 @@ export function NoteCard({ title, type, ...rest }: NoteCardProps) {
       overflow="hidden"
       rounded="md"
       _pressed={{ bg: "indigo.100" }}
+      onPress={handleSeeDetailsOsNote}
       {...rest}
     >
       <HStack w="full" alignItems="center">
