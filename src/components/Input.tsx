@@ -49,6 +49,7 @@ export function Input({
         fontFamily="body"
         placeholderTextColor="gray.400"
         placeholder={placeholder}
+        _focus={{ borderColor: "primary.400", borderWidth: 2 }}
         secureTextEntry={
           type === "password" && showPassword === false ? true : false
         }

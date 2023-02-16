@@ -27,6 +27,7 @@ import {
 import { Header } from "@components/Header";
 import { DateCard } from "@components/DateCard";
 import { NoteContainerByDate } from "@components/NoteContainerByDate";
+import { ButtonAddNote } from "@components/ButtonAddNote";
 
 export function Home() {
   const [daySelected, setDaySelected] = useState<Dayjs>(getToday());
@@ -96,6 +97,8 @@ export function Home() {
       </Text>
 
       <NoteContainerByDate />
+
+      <ButtonAddNote date={daySelected} />
     </VStack>
   );
 }
