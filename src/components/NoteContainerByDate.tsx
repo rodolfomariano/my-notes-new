@@ -1,16 +1,22 @@
-import { Dimensions } from "react-native";
+import { useRef, useState } from "react";
+import {
+  Animated,
+  Dimensions,
+  FlatList as FlatListDefault,
+  NativeScrollEvent,
+  NativeSyntheticEvent,
+} from "react-native";
 
 import {
   Badge,
-  Box,
   Button,
   FlatList,
   HStack,
-  ScrollView,
   Text,
   View,
   VStack,
 } from "native-base";
+
 import { NoteCard } from "./NoteCard";
 
 type TypesProps = "good" | "bad" | "regular";
@@ -84,8 +90,40 @@ const notes = [
 ];
 
 export function NoteContainerByDate() {
+  const [position, setPosition] = useState(0);
+  const [positionIndicator, setPositionIndicator] = useState(
+    new Animated.Value(0)
+  );
   const { width } = Dimensions.get("window");
   const dayTypeButtonWidth = (width - 48) / 3;
+
+  Animated.timing(positionIndicator, {
+    toValue: position * dayTypeButtonWidth,
+    duration: 300,
+    useNativeDriver: false,
+  }).start();
+
+  const flatListRef = useRef<FlatListDefault>(null);
+
+  function scrollToIndexWhenClicking(index: number) {
+    flatListRef.current?.scrollToIndex({
+      index: index,
+      animated: true,
+      viewPosition: 0.5,
+    });
+
+    // setPosition(index);
+  }
+
+  function handleFlatListScroll(
+    event: NativeSyntheticEvent<NativeScrollEvent>
+  ) {
+    const currentIndex = Math.ceil(
+      Math.floor(event.nativeEvent.contentOffset.x) / width
+    );
+
+    setPosition(currentIndex);
+  }
 
   return (
     <VStack px={6} pb={6} flex={1}>
@@ -97,8 +135,13 @@ export function NoteContainerByDate() {
         borderBottomColor="gray.200"
         rounded={2}
       >
-        <Button w={dayTypeButtonWidth} variant="ghost" rounded="none">
-          <Text color="primary.400">Bom</Text>
+        <Button
+          w={dayTypeButtonWidth}
+          variant="ghost"
+          rounded="none"
+          onPress={() => scrollToIndexWhenClicking(0)}
+        >
+          <Text color={position === 0 ? "primary.400" : "gray.400"}>Bom</Text>
 
           <Badge
             position="absolute"
@@ -118,8 +161,15 @@ export function NoteContainerByDate() {
           </Badge>
         </Button>
 
-        <Button w={dayTypeButtonWidth} variant="ghost" rounded="none">
-          <Text color="gray.400">Normal</Text>
+        <Button
+          w={dayTypeButtonWidth}
+          variant="ghost"
+          rounded="none"
+          onPress={() => scrollToIndexWhenClicking(1)}
+        >
+          <Text color={position === 1 ? "primary.400" : "gray.400"}>
+            Normal
+          </Text>
 
           <Badge
             position="absolute"
@@ -139,8 +189,13 @@ export function NoteContainerByDate() {
           </Badge>
         </Button>
 
-        <Button w={dayTypeButtonWidth} variant="ghost" rounded="none">
-          <Text color="gray.400">Ruim</Text>
+        <Button
+          w={dayTypeButtonWidth}
+          variant="ghost"
+          rounded="none"
+          onPress={() => scrollToIndexWhenClicking(2)}
+        >
+          <Text color={position === 2 ? "primary.400" : "gray.400"}>Ruim</Text>
 
           <Badge
             position="absolute"
@@ -160,19 +215,24 @@ export function NoteContainerByDate() {
           </Badge>
         </Button>
 
-        <Box
-          w={dayTypeButtonWidth}
-          h="2px"
-          position="absolute"
-          bottom="-2px"
-          left={0}
-          bg="primary.400"
-          rounded={2}
+        <Animated.View
+          style={[
+            {
+              position: "absolute",
+              bottom: -2,
+              height: 2,
+              width: dayTypeButtonWidth,
+              backgroundColor: "#A381EF",
+              left: positionIndicator,
+              borderRadius: 2,
+            },
+          ]}
         />
       </HStack>
 
       <View width="full" flex={1} mt={4} rounded="lg" overflow="hidden">
         <FlatList
+          ref={flatListRef}
           data={containers}
           keyExtractor={(item) => item}
           renderItem={({ item }) => (
@@ -203,6 +263,7 @@ export function NoteContainerByDate() {
           flex={1}
           pagingEnabled
           showsHorizontalScrollIndicator={false}
+          onScroll={handleFlatListScroll}
         />
       </View>
     </VStack>
