@@ -26,6 +26,7 @@ import {
 
 import { Header } from "@components/Header";
 import { DateCard } from "@components/DateCard";
+import { NoteContainerByDate } from "@components/NoteContainerByDate";
 
 export function Home() {
   const [daySelected, setDaySelected] = useState<Dayjs>(getToday());
@@ -93,6 +94,8 @@ export function Home() {
       <Text textAlign="center" fontSize={20} color="primary.400">
         {formatFullDate(daySelected)}
       </Text>
+
+      <NoteContainerByDate />
     </VStack>
   );
 }
