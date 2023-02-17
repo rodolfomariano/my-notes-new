@@ -1,3 +1,5 @@
+import { useNavigation } from "@react-navigation/native";
+
 import {
   Button,
   Center,
@@ -8,7 +10,9 @@ import {
   VStack,
 } from "native-base";
 
-import { useNavigation } from "@react-navigation/native";
+import { useForm, Controller } from "react-hook-form";
+import * as yup from "yup";
+import { yupResolver } from "@hookform/resolvers/yup";
 
 import { Entypo } from "@expo/vector-icons";
 
@@ -18,11 +22,49 @@ import EllipsePng from "@assets/ellipse.png";
 import { Input } from "@components/Input";
 import { SubmitButton } from "@components/SubmitButton";
 
+interface SignUpFormProps {
+  name: string;
+  email: string;
+  password: string;
+  passwordConfirm: string;
+}
+
+const signUpSchema = yup.object({
+  name: yup.string().required("Informe seu nome"),
+  email: yup
+    .string()
+    .required("Campo email, não pode estar vazio.")
+    .email("Informe um email válido."),
+  password: yup
+    .string()
+    .required("Cria uma senha.")
+    .min(6, "A senha deve ter no minimo 6 caracteres."),
+  passwordConfirm: yup
+    .string()
+    .required("Confirme a senha.")
+    .oneOf([yup.ref("password")], "As senhas não batem."),
+});
+
 export function SignUp() {
+  const {
+    control,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<SignUpFormProps>({
+    resolver: yupResolver(signUpSchema),
+  });
+
   const navigation = useNavigation();
 
   function handleGoBackToSignIn() {
     navigation.goBack();
+  }
+
+  function handleSignUp(data: SignUpFormProps) {
+    // console.log(data);
+
+    reset();
   }
 
   return (
@@ -48,29 +90,70 @@ export function SignUp() {
           </Button>
 
           <VStack w="full" alignItems="center">
-            <Input label="Nome" placeholder="Digite seu nome" isRequired />
-
-            <Input
-              label="Email"
-              placeholder="Digite seu email"
-              keyboardType="email-address"
-              autoCapitalize="none"
-              isRequired
+            <Controller
+              control={control}
+              name="name"
+              render={({ field: { onChange, value } }) => (
+                <Input
+                  label="Nome"
+                  placeholder="Digite seu nome"
+                  isRequired
+                  onChangeText={onChange}
+                  value={value}
+                  errorMessage={errors.name?.message}
+                />
+              )}
             />
 
-            <Input
-              label="Senha"
-              placeholder="Digite sua senha"
-              type="password"
-              isRequired
+            <Controller
+              control={control}
+              name="email"
+              render={({ field: { onChange, value } }) => (
+                <Input
+                  label="Email"
+                  placeholder="Digite seu email"
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  isRequired
+                  onChangeText={onChange}
+                  value={value}
+                  errorMessage={errors.email?.message}
+                />
+              )}
             />
 
-            <Input
-              label="Confirme a senha"
-              placeholder="Digite a senha novamente"
-              type="password"
-              returnKeyType="send"
-              isRequired
+            <Controller
+              control={control}
+              name="password"
+              render={({ field: { onChange, value } }) => (
+                <Input
+                  label="Senha"
+                  placeholder="Digite sua senha"
+                  type="password"
+                  isRequired
+                  onChangeText={onChange}
+                  value={value}
+                  errorMessage={errors.password?.message}
+                />
+              )}
+            />
+
+            <Controller
+              control={control}
+              name="passwordConfirm"
+              render={({ field: { onChange, value } }) => (
+                <Input
+                  label="Confirme a senha"
+                  placeholder="Digite a senha novamente"
+                  type="password"
+                  returnKeyType="send"
+                  isRequired
+                  onChangeText={onChange}
+                  value={value}
+                  errorMessage={errors.passwordConfirm?.message}
+                  onSubmitEditing={handleSubmit(handleSignUp)}
+                />
+              )}
             />
 
             <Center flexDirection="row" flexWrap="wrap" py={2}>
@@ -95,7 +178,12 @@ export function SignUp() {
               </Button>
             </Center>
 
-            <SubmitButton title="Criar" mt={4} size="large" />
+            <SubmitButton
+              title="Criar"
+              mt={4}
+              size="large"
+              onPress={handleSubmit(handleSignUp)}
+            />
           </VStack>
         </Center>
 

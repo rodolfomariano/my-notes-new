@@ -1,3 +1,5 @@
+import { useNavigation } from "@react-navigation/native";
+
 import {
   Box,
   Button,
@@ -5,11 +7,15 @@ import {
   Icon,
   Image,
   ScrollView,
+  StatusBar,
   Text,
   VStack,
 } from "native-base";
 
-import { useNavigation } from "@react-navigation/native";
+import { useForm, Controller } from "react-hook-form";
+import * as yup from "yup";
+import { yupResolver } from "@hookform/resolvers/yup";
+
 import { PublicNavigatorRoutesProps } from "@routes/public.routes";
 
 import { AntDesign } from "@expo/vector-icons";
@@ -21,11 +27,42 @@ import { Input } from "@components/Input";
 import { SubmitButton } from "@components/SubmitButton";
 import { ButtonRecoverPassword } from "@components/ButtonRecoverPassword";
 
+interface SignInFormProps {
+  email: string;
+  password: string;
+}
+
+const signInSchema = yup.object({
+  email: yup
+    .string()
+    .required("Campo email, não pode estar vazio.")
+    .email("Informe um email válido."),
+  password: yup
+    .string()
+    .required("Informe sua senha.")
+    .min(6, "A senha deve ter no minimo 6 caracteres."),
+});
+
 export function SignIn() {
+  const {
+    control,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<SignInFormProps>({
+    resolver: yupResolver(signInSchema),
+  });
+
   const navigation = useNavigation<PublicNavigatorRoutesProps>();
 
   function handleGoToSignUp() {
     navigation.navigate("signUp");
+  }
+
+  function handleSignIn(data: SignInFormProps) {
+    // console.log(data);
+
+    reset();
   }
 
   return (
@@ -33,6 +70,12 @@ export function SignIn() {
       contentContainerStyle={{ flexGrow: 1 }}
       showsVerticalScrollIndicator={false}
     >
+      <StatusBar
+        barStyle="light-content"
+        backgroundColor="transparent"
+        translucent
+      />
+
       <Center flex={1} bg="primary.100">
         <Center w="full" py={12} px={10} alignItems="center" zIndex={200}>
           <LogoSvg />
@@ -64,22 +107,47 @@ export function SignIn() {
           </Center>
 
           <VStack w="full" alignItems="center">
-            <Input
-              label="Email"
-              placeholder="Digite seu email"
-              keyboardType="email-address"
-              autoCapitalize="none"
-              isRequired
-            />
-            <Input
-              label="Senha"
-              placeholder="Digite sua senha"
-              type="password"
-              returnKeyType="send"
-              isRequired
+            <Controller
+              control={control}
+              name="email"
+              render={({ field: { onChange, value } }) => (
+                <Input
+                  label="Email"
+                  placeholder="Digite seu email"
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  isRequired
+                  onChangeText={onChange}
+                  value={value}
+                  errorMessage={errors.email?.message}
+                />
+              )}
             />
 
-            <SubmitButton title="Entrar" mt={4} size="large" />
+            <Controller
+              control={control}
+              name="password"
+              render={({ field: { onChange, value } }) => (
+                <Input
+                  label="Senha"
+                  placeholder="Digite sua senha"
+                  type="password"
+                  returnKeyType="send"
+                  isRequired
+                  onChangeText={onChange}
+                  value={value}
+                  onSubmitEditing={handleSubmit(handleSignIn)}
+                  errorMessage={errors.password?.message}
+                />
+              )}
+            />
+
+            <SubmitButton
+              title="Entrar"
+              mt={4}
+              size="large"
+              onPress={handleSubmit(handleSignIn)}
+            />
 
             <ButtonRecoverPassword />
           </VStack>

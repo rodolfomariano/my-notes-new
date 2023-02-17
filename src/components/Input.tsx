@@ -15,7 +15,7 @@ interface InputProps extends IInputProps {
   type?: "text" | "password";
   label: string;
   placeholder: string;
-  errorMessage?: string;
+  errorMessage?: string | null;
   isRequired?: boolean;
 }
 
@@ -23,18 +23,20 @@ export function Input({
   type = "text",
   label,
   placeholder,
-  errorMessage,
+  errorMessage = null,
   isRequired = false,
   ...rest
 }: InputProps) {
   const [showPassword, setShowPassword] = useState(false);
+
+  const isErrorMessage = !!errorMessage;
 
   function handleShowPassword() {
     setShowPassword(!showPassword);
   }
 
   return (
-    <FormControl mb={2} isRequired={isRequired}>
+    <FormControl mb={2} isRequired={isRequired} isInvalid={isErrorMessage}>
       <FormControl.Label h={4}>
         <Text fontSize="2xs" color="gray.400">
           {label}
@@ -49,6 +51,8 @@ export function Input({
         fontFamily="body"
         placeholderTextColor="gray.400"
         placeholder={placeholder}
+        isInvalid={isErrorMessage}
+        _invalid={{ borderColor: "red.500" }}
         _focus={{ borderColor: "primary.400", borderWidth: 2 }}
         secureTextEntry={
           type === "password" && showPassword === false ? true : false
@@ -79,7 +83,9 @@ export function Input({
         {...rest}
       />
 
-      <FormControl.ErrorMessage>{errorMessage}</FormControl.ErrorMessage>
+      <FormControl.ErrorMessage ml="auto" position="absolute" right={0}>
+        {errorMessage}
+      </FormControl.ErrorMessage>
     </FormControl>
   );
 }
