@@ -21,6 +21,7 @@ import EllipsePng from "@assets/ellipse.png";
 
 import { Input } from "@components/Input";
 import { SubmitButton } from "@components/SubmitButton";
+import { StatusBar } from "react-native";
 
 interface SignUpFormProps {
   name: string;
@@ -72,6 +73,12 @@ export function SignUp() {
       contentContainerStyle={{ flexGrow: 1 }}
       showsVerticalScrollIndicator={false}
     >
+      <StatusBar
+        barStyle="dark-content"
+        backgroundColor="transparent"
+        translucent
+      />
+
       <Center flex={1} bg="primary.100">
         <Center w="full" py={12} px={10} alignItems="center" zIndex={200}>
           <LogoSvg />
