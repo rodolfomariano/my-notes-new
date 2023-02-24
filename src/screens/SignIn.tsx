@@ -1,3 +1,5 @@
+import { useState } from "react";
+import { Alert } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 
 import {
@@ -13,8 +15,11 @@ import {
 } from "native-base";
 
 import { useForm, Controller } from "react-hook-form";
+
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
+
+import auth from "@react-native-firebase/auth";
 
 import { PublicNavigatorRoutesProps } from "@routes/public.routes";
 
@@ -44,6 +49,8 @@ const signInSchema = yup.object({
 });
 
 export function SignIn() {
+  const [isLoading, setIsLoading] = useState(false);
+
   const {
     control,
     handleSubmit,
@@ -59,10 +66,21 @@ export function SignIn() {
     navigation.navigate("signUp");
   }
 
-  function handleSignIn(data: SignInFormProps) {
+  async function handleSignIn(data: SignInFormProps) {
     // console.log(data);
+    setIsLoading(true);
 
-    reset();
+    try {
+      auth()
+        .signInWithEmailAndPassword(data.email, data.password)
+        .then(() => Alert.alert("logado com sucesso"))
+        .catch((err) => Alert.alert("Email ou senha invalido"));
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setIsLoading(false);
+      reset();
+    }
   }
 
   return (
@@ -147,6 +165,7 @@ export function SignIn() {
               mt={4}
               size="large"
               onPress={handleSubmit(handleSignIn)}
+              isLoading={isLoading}
             />
 
             <ButtonRecoverPassword />

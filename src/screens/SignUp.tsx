@@ -1,4 +1,6 @@
+import { useState } from "react";
 import { useNavigation } from "@react-navigation/native";
+import { StatusBar } from "react-native";
 
 import {
   Button,
@@ -14,14 +16,17 @@ import { useForm, Controller } from "react-hook-form";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 
+import auth from "@react-native-firebase/auth";
+
 import { Entypo } from "@expo/vector-icons";
+
+import { PublicNavigatorRoutesProps } from "@routes/public.routes";
 
 import LogoSvg from "@assets/logo2.svg";
 import EllipsePng from "@assets/ellipse.png";
 
 import { Input } from "@components/Input";
 import { SubmitButton } from "@components/SubmitButton";
-import { StatusBar } from "react-native";
 
 interface SignUpFormProps {
   name: string;
@@ -47,6 +52,8 @@ const signUpSchema = yup.object({
 });
 
 export function SignUp() {
+  const [isLoading, setIsLoading] = useState(false);
+
   const {
     control,
     handleSubmit,
@@ -56,16 +63,33 @@ export function SignUp() {
     resolver: yupResolver(signUpSchema),
   });
 
-  const navigation = useNavigation();
+  const navigation = useNavigation<PublicNavigatorRoutesProps>();
 
   function handleGoBackToSignIn() {
     navigation.goBack();
   }
 
-  function handleSignUp(data: SignUpFormProps) {
+  async function handleSignUp(data: SignUpFormProps) {
     // console.log(data);
+    setIsLoading(true);
 
-    reset();
+    try {
+      await auth()
+        .createUserWithEmailAndPassword(data.email, data.password)
+        .then((userCredential) => {
+          userCredential.user.updateProfile({
+            displayName: data.name,
+          });
+
+          reset();
+          navigation.navigate("signIn");
+        });
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setIsLoading(false);
+      reset();
+    }
   }
 
   return (
@@ -189,6 +213,7 @@ export function SignUp() {
               title="Criar"
               mt={4}
               size="large"
+              isLoading={isLoading}
               onPress={handleSubmit(handleSignUp)}
             />
           </VStack>

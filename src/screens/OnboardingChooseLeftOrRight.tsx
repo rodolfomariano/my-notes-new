@@ -14,6 +14,8 @@ import {
 
 import { AntDesign } from "@expo/vector-icons";
 
+import { AppRoutesNavigationProps } from "@routes/app.routes";
+
 import LeftHandSvg from "@assets/left-hand.svg";
 import RightHandSvg from "@assets/right-hand.svg";
 
@@ -22,10 +24,18 @@ import { OnboardingProgressIndicator } from "@components/OnboardingProgressIndic
 export function OnboardingChooseLeftOrRight() {
   const { width } = Dimensions.get("window");
 
-  const navigation = useNavigation();
+  const navigation = useNavigation<AppRoutesNavigationProps>();
 
   function handleGoBack() {
     navigation.goBack();
+  }
+
+  async function handleImLeftHanded() {
+    navigation.navigate("home");
+  }
+
+  async function handleImRightHanded() {
+    navigation.navigate("home");
   }
 
   return (
@@ -75,6 +85,7 @@ export function OnboardingChooseLeftOrRight() {
               mr={2}
               shadow="9"
               _pressed={{ bg: "indigo.200" }}
+              onPress={handleImLeftHanded}
             >
               <LeftHandSvg />
 
@@ -94,6 +105,7 @@ export function OnboardingChooseLeftOrRight() {
               ml={2}
               shadow="9"
               _pressed={{ bg: "indigo.200" }}
+              onPress={handleImRightHanded}
             >
               <RightHandSvg />
 

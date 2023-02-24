@@ -1,25 +1,43 @@
+import { useEffect, useState } from "react";
+import { Switch } from "react-native";
+
 import {
   Avatar,
   Button,
+  Center,
   Heading,
   HStack,
   Icon,
   IconButton,
+  Image,
   Popover,
   Text,
   VStack,
 } from "native-base";
 
+import auth, { FirebaseAuthTypes } from "@react-native-firebase/auth";
+
 import { AntDesign } from "@expo/vector-icons";
-import { useState } from "react";
-import { Switch } from "react-native";
+
+import UserPng from "@assets/user.png";
 
 export function AvatarButton() {
+  const [user, setUser] = useState<FirebaseAuthTypes.User | null>(null);
   const [isLeftHanded, setIsLeftHanded] = useState(false);
 
   async function toggleHand() {
     setIsLeftHanded(!isLeftHanded);
   }
+
+  async function handleSignOut() {
+    await auth().signOut();
+  }
+
+  useEffect(() => {
+    const subscriber = auth().onAuthStateChanged(setUser);
+
+    return subscriber;
+  });
 
   return (
     <Popover
@@ -28,11 +46,22 @@ export function AvatarButton() {
           <IconButton
             {...triggerProps}
             icon={
-              <Avatar
-                source={{ uri: "https://github.com/rodolfomariano.png" }}
-                size="md"
-                bg="primary.100"
-              />
+              user?.photoURL ? (
+                <Avatar
+                  source={{ uri: user?.photoURL }}
+                  size="md"
+                  bg="primary.100"
+                />
+              ) : (
+                <Center w={8} h={8} bg="primary.100" rounded="full">
+                  <Image
+                    source={UserPng}
+                    defaultSource={UserPng}
+                    alt="Imagem de usuário"
+                    size={4}
+                  />
+                </Center>
+              )
             }
             p={0}
             rounded="full"
@@ -55,18 +84,29 @@ export function AvatarButton() {
           rounded="md"
         >
           <VStack flex={1} alignItems="center">
-            <Avatar
-              source={{ uri: "https://github.com/rodolfomariano.png" }}
-              size="2xl"
-              bg="primary.100"
-            />
+            {user?.photoURL ? (
+              <Avatar
+                source={{ uri: user?.photoURL }}
+                size="2xl"
+                bg="primary.100"
+              />
+            ) : (
+              <Center w={24} h={24} bg="primary.100" rounded="full">
+                <Image
+                  source={UserPng}
+                  defaultSource={UserPng}
+                  alt="Imagem de usuário"
+                  size={10}
+                />
+              </Center>
+            )}
 
             <Text fontFamily="heading" fontSize={16} mt={2} color="gray.700">
-              Rodolfo Mariano de Souza
+              {user?.displayName}
             </Text>
 
             <Text fontFamily="body" fontSize={12} color="gray.500">
-              meuemail@gmail.com
+              {user?.email}
             </Text>
 
             <HStack
@@ -118,7 +158,13 @@ export function AvatarButton() {
               </HStack>
             </HStack>
 
-            <Button w="full" variant="outline" colorScheme="danger" mt={32}>
+            <Button
+              w="full"
+              variant="outline"
+              colorScheme="danger"
+              mt={32}
+              onPress={handleSignOut}
+            >
               Sair
             </Button>
           </VStack>
