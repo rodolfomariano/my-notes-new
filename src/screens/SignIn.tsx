@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Alert } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 
@@ -14,16 +14,19 @@ import {
   VStack,
 } from "native-base";
 
+import auth from "@react-native-firebase/auth";
+import { GoogleSignin } from "@react-native-google-signin/google-signin";
+
 import { useForm, Controller } from "react-hook-form";
 
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 
-import auth from "@react-native-firebase/auth";
-
 import { PublicNavigatorRoutesProps } from "@routes/public.routes";
 
 import { AntDesign } from "@expo/vector-icons";
+
+import Config from "react-native-config";
 
 import LogoSvg from "@assets/logo.svg";
 import EllipsePng from "@assets/ellipse.png";
@@ -66,6 +69,15 @@ export function SignIn() {
     navigation.navigate("signUp");
   }
 
+  async function handleSignWithGoogle() {
+    await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
+
+    const { idToken } = await GoogleSignin.signIn();
+    const googleCredential = auth.GoogleAuthProvider.credential(idToken);
+
+    return auth().signInWithCredential(googleCredential);
+  }
+
   async function handleSignIn(data: SignInFormProps) {
     // console.log(data);
     setIsLoading(true);
@@ -82,6 +94,13 @@ export function SignIn() {
       reset();
     }
   }
+
+  useEffect(() => {
+    GoogleSignin.configure({
+      webClientId: Config.GOOGLE_CLIENT_ID,
+      // "106092652947-7sl4v9sf4pkc3lruu5ghmdb3aq3b9f7l.apps.googleusercontent.com",
+    });
+  }, []);
 
   return (
     <ScrollView
@@ -110,6 +129,7 @@ export function SignIn() {
             mt={10}
             _pressed={{ bg: "primary.200" }}
             leftIcon={<Icon as={AntDesign} name="google" color="gray.500" />}
+            onPress={handleSignWithGoogle}
           >
             <Text fontFamily="body" color="gray.500">
               Entrar com google
