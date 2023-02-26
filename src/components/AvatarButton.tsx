@@ -28,8 +28,6 @@ export function AvatarButton() {
 
   const { handleType, toggleHandType } = useStorage();
 
-  console.log(handleType);
-
   async function toggleHand() {
     if (handleType === "left") {
       return toggleHandType("right");

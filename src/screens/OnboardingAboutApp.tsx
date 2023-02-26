@@ -19,14 +19,18 @@ import { AntDesign } from "@expo/vector-icons";
 import ButtonDesignSvg from "@assets/button-design.svg";
 import GirlWriting from "@assets/girl-writing.svg";
 
-import { OnboardingNavigationRoutesProps } from "@routes/onboarding.routes";
+import { AppRoutesNavigationProps } from "@routes/app.routes";
 
 import { OnboardingProgressIndicator } from "@components/OnboardingProgressIndicator";
+
+import { useStorage } from "../hooks/useStorage";
 
 export function OnboardingAboutApp() {
   const { width } = Dimensions.get("window");
 
-  const navigation = useNavigation<OnboardingNavigationRoutesProps>();
+  const navigation = useNavigation<AppRoutesNavigationProps>();
+
+  const { toggleHandType } = useStorage();
 
   function handleGoBack() {
     navigation.goBack();
@@ -34,6 +38,12 @@ export function OnboardingAboutApp() {
 
   function handleGoToChooseLeftOrRightScreen() {
     navigation.navigate("onboardingChooseLeftOrRight");
+  }
+
+  function handleSkitIntro() {
+    toggleHandType("right");
+
+    navigation.navigate("home");
   }
 
   return (
@@ -80,7 +90,15 @@ export function OnboardingAboutApp() {
 
             <OnboardingProgressIndicator progressPosition={2} />
 
-            <Button mt={8} w={12} h={12} p={0} rounded="full" variant="ghost">
+            <Button
+              mt={8}
+              w={12}
+              h={12}
+              p={0}
+              rounded="full"
+              variant="ghost"
+              onPress={handleSkitIntro}
+            >
               Pular
             </Button>
 

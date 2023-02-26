@@ -148,6 +148,7 @@ export function OnboardingChooseLeftOrRight() {
               p={0}
               rounded="full"
               variant="ghost"
+              onPress={handleImRightHanded}
             >
               Pular
             </Button>

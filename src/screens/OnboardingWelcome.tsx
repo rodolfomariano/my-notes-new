@@ -20,15 +20,24 @@ import WelcomeImageSvg from "@assets/welcome-image.svg";
 import ButtonDesignSvg from "@assets/button-design.svg";
 
 import { OnboardingProgressIndicator } from "@components/OnboardingProgressIndicator";
-import { OnboardingNavigationRoutesProps } from "@routes/onboarding.routes";
+import { AppRoutesNavigationProps } from "@routes/app.routes";
+import { useStorage } from "../hooks/useStorage";
 
 export function OnboardingWelcome() {
   const { width } = Dimensions.get("window");
 
-  const navigation = useNavigation<OnboardingNavigationRoutesProps>();
+  const navigation = useNavigation<AppRoutesNavigationProps>();
+
+  const { toggleHandType } = useStorage();
 
   function handleNextOnboardingScreen() {
     navigation.navigate("onBoardingAboutApp");
+  }
+
+  function handleSkitIntro() {
+    toggleHandType("right");
+
+    navigation.navigate("home");
   }
 
   return (
@@ -71,7 +80,15 @@ export function OnboardingWelcome() {
 
             <OnboardingProgressIndicator progressPosition={1} />
 
-            <Button mt={8} w={12} h={12} p={0} rounded="full" variant="ghost">
+            <Button
+              mt={8}
+              w={12}
+              h={12}
+              p={0}
+              rounded="full"
+              variant="ghost"
+              onPress={handleSkitIntro}
+            >
               Pular
             </Button>
 
