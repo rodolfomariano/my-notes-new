@@ -21,20 +21,28 @@ import RightHandSvg from "@assets/right-hand.svg";
 
 import { OnboardingProgressIndicator } from "@components/OnboardingProgressIndicator";
 
+import { useStorage } from "../hooks/useStorage";
+
 export function OnboardingChooseLeftOrRight() {
   const { width } = Dimensions.get("window");
 
   const navigation = useNavigation<AppRoutesNavigationProps>();
+
+  const { toggleHandType } = useStorage();
 
   function handleGoBack() {
     navigation.goBack();
   }
 
   async function handleImLeftHanded() {
+    toggleHandType("left");
+
     navigation.navigate("home");
   }
 
   async function handleImRightHanded() {
+    toggleHandType("right");
+
     navigation.navigate("home");
   }
 

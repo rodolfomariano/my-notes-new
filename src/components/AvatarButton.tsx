@@ -20,13 +20,23 @@ import auth, { FirebaseAuthTypes } from "@react-native-firebase/auth";
 import { AntDesign } from "@expo/vector-icons";
 
 import UserPng from "@assets/user.png";
+import { useStorage } from "../hooks/useStorage";
 
 export function AvatarButton() {
   const [user, setUser] = useState<FirebaseAuthTypes.User | null>(null);
-  const [isLeftHanded, setIsLeftHanded] = useState(false);
+  const [isRightHanded, setIsRightHanded] = useState(true);
+
+  const { handleType, toggleHandType } = useStorage();
+
+  console.log(handleType);
 
   async function toggleHand() {
-    setIsLeftHanded(!isLeftHanded);
+    if (handleType === "left") {
+      return toggleHandType("right");
+    }
+    if (handleType === "right") {
+      return toggleHandType("left");
+    }
   }
 
   async function handleSignOut() {
@@ -38,6 +48,11 @@ export function AvatarButton() {
 
     return subscriber;
   });
+
+  useEffect(() => {
+    handleType === "right" && setIsRightHanded(true);
+    handleType === "left" && setIsRightHanded(false);
+  }, [handleType]);
 
   return (
     <Popover
@@ -130,10 +145,11 @@ export function AvatarButton() {
 
                 <Switch
                   trackColor={{ false: "#e0f2fe", true: "#e0f2fe" }}
-                  thumbColor={isLeftHanded ? "#bae6fd" : "#bae6fd"}
+                  thumbColor={isRightHanded ? "#bae6fd" : "#bae6fd"}
                   style={{ transform: [{ scaleX: 0.8 }, { scaleY: 0.8 }] }}
                   onChange={toggleHand}
-                  value={isLeftHanded}
+                  onValueChange={toggleHand}
+                  value={isRightHanded}
                 />
 
                 <Text fontSize={10} color="gray.500">

@@ -37,7 +37,7 @@ export function OnboardingWelcome() {
       showsVerticalScrollIndicator={false}
     >
       <StatusBar
-        barStyle="dark-content"
+        barStyle="light-content"
         backgroundColor="transparent"
         translucent
       />

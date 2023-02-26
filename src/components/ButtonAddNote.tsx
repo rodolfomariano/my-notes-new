@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import {
   Button,
@@ -19,6 +19,8 @@ import { Dayjs } from "dayjs";
 import { formatFullDate } from "@utils/formatDates";
 
 import { Input } from "./Input";
+import { getHandType } from "@storage/handType";
+import { useStorage } from "../hooks/useStorage";
 
 interface ButtonAddNoteProps extends IIconButtonProps {
   date: Dayjs;
@@ -28,26 +30,49 @@ export function ButtonAddNote({ date, ...rest }: ButtonAddNoteProps) {
   const [showModalNewNote, setShowModalNewNote] = useState(false);
   const [radioSelected, seRadioSelected] = useState("regular");
 
+  const { handleType } = useStorage();
+
   return (
     <>
-      <IconButton
-        _icon={{
-          as: AntDesign,
-          name: "plus",
-        }}
-        borderRadius="full"
-        position="absolute"
-        bottom={10}
-        right={4}
-        variant="solid"
-        w={12}
-        h={12}
-        bg="primary.400"
-        _pressed={{ bg: "primary.500" }}
-        shadow="2"
-        onPress={() => setShowModalNewNote(true)}
-        {...rest}
-      />
+      {handleType === "right" ? (
+        <IconButton
+          _icon={{
+            as: AntDesign,
+            name: "plus",
+          }}
+          borderRadius="full"
+          position="absolute"
+          bottom={10}
+          right={4}
+          variant="solid"
+          w={12}
+          h={12}
+          bg="primary.400"
+          _pressed={{ bg: "primary.500" }}
+          shadow="2"
+          onPress={() => setShowModalNewNote(true)}
+          {...rest}
+        />
+      ) : (
+        <IconButton
+          _icon={{
+            as: AntDesign,
+            name: "plus",
+          }}
+          borderRadius="full"
+          position="absolute"
+          bottom={10}
+          left={4}
+          variant="solid"
+          w={12}
+          h={12}
+          bg="primary.400"
+          _pressed={{ bg: "primary.500" }}
+          shadow="2"
+          onPress={() => setShowModalNewNote(true)}
+          {...rest}
+        />
+      )}
 
       <Modal
         isOpen={showModalNewNote}
