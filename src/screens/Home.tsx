@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { Dayjs } from "dayjs";
 
@@ -24,12 +24,16 @@ import {
   getMonth,
 } from "@utils/formatDates";
 
+import auth, { FirebaseAuthTypes } from "@react-native-firebase/auth";
+
 import { Header } from "@components/Header";
 import { DateCard } from "@components/DateCard";
 import { NoteContainerByDate } from "@components/NoteContainerByDate";
 import { ButtonAddNote } from "@components/ButtonAddNote";
+import { setFirstAccess } from "@storage/firstAccess";
 
 export function Home() {
+  const [user, setUser] = useState<FirebaseAuthTypes.User | null>(null);
   const [daySelected, setDaySelected] = useState<Dayjs>(getToday());
   const [today, setToday] = useState<Dayjs>(getToday());
   const [days, setDays] = useState<Dayjs[]>(getCurrencyWeekDays());
@@ -51,6 +55,16 @@ export function Home() {
 
     return setDays((state) => [...state, ...daysOfNextWeek]);
   }
+
+  useEffect(() => {
+    const subscriber = auth().onAuthStateChanged(setUser);
+
+    if (user?.email) {
+      setFirstAccess(user.email);
+    }
+
+    return subscriber;
+  }, [user]);
 
   return (
     <VStack flex={1} bg="primary.100">
