@@ -3,7 +3,7 @@ import dayjs, { Dayjs } from "dayjs";
 export function getToday() {
   const today = dayjs();
 
-  return today;
+  return today.startOf("day");
 }
 
 export function getCurrencyWeekDays() {

@@ -7,10 +7,15 @@ import {
   IIconButtonProps,
   Modal,
   Radio,
+  Spinner,
   Stack,
   Text,
   TextArea,
 } from "native-base";
+
+import firestore from "@react-native-firebase/firestore";
+
+import auth, { FirebaseAuthTypes } from "@react-native-firebase/auth";
 
 import { AntDesign } from "@expo/vector-icons";
 
@@ -21,16 +26,46 @@ import { formatFullDate } from "@utils/formatDates";
 import { Input } from "./Input";
 import { getHandType } from "@storage/handType";
 import { useStorage } from "../hooks/useStorage";
+import { Alert } from "react-native";
 
 interface ButtonAddNoteProps extends IIconButtonProps {
   date: Dayjs;
 }
 
 export function ButtonAddNote({ date, ...rest }: ButtonAddNoteProps) {
+  const [user, setUser] = useState<FirebaseAuthTypes.User | null>(null);
   const [showModalNewNote, setShowModalNewNote] = useState(false);
   const [radioSelected, seRadioSelected] = useState("regular");
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [isAddNewNote, setIsAddNewNote] = useState(false);
 
   const { handleType } = useStorage();
+
+  function handleAddNewNote() {
+    setIsAddNewNote(true);
+
+    if (user?.email) {
+      firestore()
+        .collection(user?.email)
+        .add({
+          title,
+          description,
+          note_type: radioSelected,
+          created_at: date.toDate(),
+          updated_at: null,
+        })
+        .then(() => Alert.alert("Nota", "Nota adicionada com sucesso!"))
+        .catch((error) => console.log(error))
+        .finally(() => setIsAddNewNote(false));
+    }
+  }
+
+  useEffect(() => {
+    const subscriber = auth().onAuthStateChanged(setUser);
+
+    return subscriber;
+  });
 
   return (
     <>
@@ -95,6 +130,8 @@ export function ButtonAddNote({ date, ...rest }: ButtonAddNoteProps) {
               <Input
                 label="Titulo"
                 placeholder="Digite um titulo para a nota"
+                onChangeText={setTitle}
+                value={title}
               />
             </FormControl>
             <FormControl>
@@ -118,6 +155,8 @@ export function ButtonAddNote({ date, ...rest }: ButtonAddNoteProps) {
                   backgroundColor: "rgba(243, 239, 252, 04)",
                 }}
                 _focus={{ borderColor: "primary.400", borderWidth: 2 }}
+                onChangeText={setDescription}
+                value={description}
               />
             </FormControl>
             <Radio.Group
@@ -187,11 +226,17 @@ export function ButtonAddNote({ date, ...rest }: ButtonAddNoteProps) {
               <Button
                 bg="primary.400"
                 _pressed={{ bg: "primary.500" }}
-                onPress={() => {
-                  // setShowModalNewNote(false);
-                }}
+                onPress={handleAddNewNote}
+                disabled={isAddNewNote}
               >
-                Adicionar
+                {isAddNewNote ? (
+                  <Spinner
+                    size="sm"
+                    accessibilityLabel="Adicionando nova anotação"
+                  />
+                ) : (
+                  "Adicionar"
+                )}
               </Button>
             </Button.Group>
           </Modal.Footer>

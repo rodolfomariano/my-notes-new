@@ -90,7 +90,9 @@ export function Home() {
                 isToday={
                   item.format("DD/MM/YYYY") === today.format("DD/MM/YYYY")
                 }
-                isSelected={daySelected === item}
+                isSelected={
+                  daySelected.format("DD/MM/YYYY") === item.format("DD/MM/YYYY")
+                }
                 onPress={() => handleSelectDate(item)}
               />
             );
@@ -110,7 +112,7 @@ export function Home() {
         {formatFullDate(daySelected)}
       </Text>
 
-      <NoteContainerByDate />
+      <NoteContainerByDate date={daySelected.toDate()} />
 
       <ButtonAddNote date={daySelected} />
     </VStack>

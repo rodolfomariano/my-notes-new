@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Animated,
   Dimensions,
@@ -17,79 +17,33 @@ import {
   VStack,
 } from "native-base";
 
+import firestore from "@react-native-firebase/firestore";
+
+import auth, { FirebaseAuthTypes } from "@react-native-firebase/auth";
+
 import { NoteCard } from "./NoteCard";
+import { Dayjs } from "dayjs";
 
 type TypesProps = "good" | "bad" | "regular";
 
 const containers = ["good", "regular", "bad"];
 
-const notes = [
-  {
-    id: "123",
-    title: "Comprei meu primeiro apartamento em São paulo",
-    description:
-      "Todos nós já nos sentimos nervosos depois de sair de uma entrevista de emprego ou de estágio, especialmente nas situações em que a resposta sobre a candidatura demora vários dias ou até semanas para chegar. Provavelmente, você já se perguntou “quais são os sinais de que passei na entrevista?”. Afinal, se você os conhecer, pode ir mais relaxado.",
-    type: "good",
-  },
-  {
-    id: "133",
-    title: "Fui Roubado",
-    description:
-      "Todos nós já nos sentimos nervosos depois de sair de uma entrevista de emprego ou de estágio, especialmente nas situações em que a resposta sobre a candidatura demora vários dias ou até semanas para chegar. Provavelmente, você já se perguntou “quais são os sinais de que passei na entrevista?”. Afinal, se você os conhecer, pode ir mais relaxado.",
-    type: "bad",
-  },
-  {
-    id: "111",
-    title: "reunião na empresa",
-    description:
-      "Todos nós já nos sentimos nervosos depois de sair de uma entrevista de emprego ou de estágio, especialmente nas situações em que a resposta sobre a candidatura demora vários dias ou até semanas para chegar. Provavelmente, você já se perguntou “quais são os sinais de que passei na entrevista?”. Afinal, se você os conhecer, pode ir mais relaxado.",
-    type: "regular",
-  },
-  {
-    id: "444",
-    title: "Carro no concerto",
-    description:
-      "Todos nós já nos sentimos nervosos depois de sair de uma entrevista de emprego ou de estágio, especialmente nas situações em que a resposta sobre a candidatura demora vários dias ou até semanas para chegar. Provavelmente, você já se perguntou “quais são os sinais de que passei na entrevista?”. Afinal, se você os conhecer, pode ir mais relaxado.",
-    type: "regular",
-  },
-  {
-    id: "555",
-    title: "Carro no concerto",
-    description:
-      "Todos nós já nos sentimos nervosos depois de sair de uma entrevista de emprego ou de estágio, especialmente nas situações em que a resposta sobre a candidatura demora vários dias ou até semanas para chegar. Provavelmente, você já se perguntou “quais são os sinais de que passei na entrevista?”. Afinal, se você os conhecer, pode ir mais relaxado.",
-    type: "regular",
-  },
-  {
-    id: "666",
-    title: "Carro no concerto",
-    description:
-      "Todos nós já nos sentimos nervosos depois de sair de uma entrevista de emprego ou de estágio, especialmente nas situações em que a resposta sobre a candidatura demora vários dias ou até semanas para chegar. Provavelmente, você já se perguntou “quais são os sinais de que passei na entrevista?”. Afinal, se você os conhecer, pode ir mais relaxado.",
-    type: "regular",
-  },
-  {
-    id: "777",
-    title: "Carro no concerto",
-    description:
-      "Todos nós já nos sentimos nervosos depois de sair de uma entrevista de emprego ou de estágio, especialmente nas situações em que a resposta sobre a candidatura demora vários dias ou até semanas para chegar. Provavelmente, você já se perguntou “quais são os sinais de que passei na entrevista?”. Afinal, se você os conhecer, pode ir mais relaxado.",
-    type: "regular",
-  },
-  {
-    id: "888",
-    title: "Carro no concerto",
-    description:
-      "Todos nós já nos sentimos nervosos depois de sair de uma entrevista de emprego ou de estágio, especialmente nas situações em que a resposta sobre a candidatura demora vários dias ou até semanas para chegar. Provavelmente, você já se perguntou “quais são os sinais de que passei na entrevista?”. Afinal, se você os conhecer, pode ir mais relaxado.",
-    type: "regular",
-  },
-  {
-    id: "999",
-    title: "Carro no concerto",
-    description:
-      "Todos nós já nos sentimos nervosos depois de sair de uma entrevista de emprego ou de estágio, especialmente nas situações em que a resposta sobre a candidatura demora vários dias ou até semanas para chegar. Provavelmente, você já se perguntou “quais são os sinais de que passei na entrevista?”. Afinal, se você os conhecer, pode ir mais relaxado.",
-    type: "regular",
-  },
-];
+interface Note {
+  id: "string";
+  title: "string";
+  description: "string";
+  note_type: "good" | "regular" | "bad";
+  created_at: "string";
+  updated_at: "string" | null;
+}
 
-export function NoteContainerByDate() {
+interface NoteContainerByDateProps {
+  date: Date;
+}
+
+export function NoteContainerByDate({ date }: NoteContainerByDateProps) {
+  const [user, setUser] = useState<FirebaseAuthTypes.User | null>(null);
+  const [notes, setNotes] = useState<Note[]>([]);
   const [position, setPosition] = useState(0);
   const [positionIndicator, setPositionIndicator] = useState(
     new Animated.Value(0)
@@ -104,6 +58,18 @@ export function NoteContainerByDate() {
   }).start();
 
   const flatListRef = useRef<FlatListDefault>(null);
+
+  const numberOfGoodNotes = notes.filter(
+    (note) => note.note_type === "good"
+  ).length;
+
+  const numberOfRegularNotes = notes.filter(
+    (note) => note.note_type === "regular"
+  ).length;
+
+  const numberOfBadNotes = notes.filter(
+    (note) => note.note_type === "bad"
+  ).length;
 
   function scrollToIndexWhenClicking(index: number) {
     flatListRef.current?.scrollToIndex({
@@ -125,6 +91,35 @@ export function NoteContainerByDate() {
     setPosition(currentIndex);
   }
 
+  async function getNotesBayUserEmail() {
+    if (user?.email) {
+      const userNotes = await firestore()
+        .collection(user.email)
+        .where("created_at", "==", date)
+        .onSnapshot((querySnapshop) => {
+          const data = querySnapshop.docs.map((note) => {
+            return {
+              id: note.id,
+              ...note.data(),
+            };
+          }) as Note[];
+          setNotes(data);
+        });
+
+      return () => userNotes();
+    }
+  }
+
+  useEffect(() => {
+    const subscriber = auth().onAuthStateChanged(setUser);
+
+    return subscriber;
+  }, []);
+
+  useEffect(() => {
+    getNotesBayUserEmail();
+  }, [user, date]);
+
   return (
     <VStack px={6} pb={6} flex={1}>
       <HStack
@@ -143,22 +138,24 @@ export function NoteContainerByDate() {
         >
           <Text color={position === 0 ? "primary.400" : "gray.400"}>Bom</Text>
 
-          <Badge
-            position="absolute"
-            top={-10}
-            right={-30}
-            w={5}
-            h={5}
-            p={0}
-            alignItems="center"
-            justifyContent="center"
-            rounded="full"
-            bg="primary.400"
-          >
-            <Text fontSize={10} lineHeight={14} color="primary.100">
-              20
-            </Text>
-          </Badge>
+          {numberOfGoodNotes > 0 && (
+            <Badge
+              position="absolute"
+              top={-10}
+              right={-30}
+              w={5}
+              h={5}
+              p={0}
+              alignItems="center"
+              justifyContent="center"
+              rounded="full"
+              bg="primary.400"
+            >
+              <Text fontSize={10} lineHeight={14} color="primary.100">
+                {numberOfGoodNotes}
+              </Text>
+            </Badge>
+          )}
         </Button>
 
         <Button
@@ -171,22 +168,24 @@ export function NoteContainerByDate() {
             Normal
           </Text>
 
-          <Badge
-            position="absolute"
-            top={-10}
-            right={-30}
-            w={5}
-            h={5}
-            p={0}
-            alignItems="center"
-            justifyContent="center"
-            rounded="full"
-            bg="rose.400"
-          >
-            <Text fontSize={10} lineHeight={14} color="primary.100">
-              20
-            </Text>
-          </Badge>
+          {numberOfRegularNotes > 0 && (
+            <Badge
+              position="absolute"
+              top={-10}
+              right={-30}
+              w={5}
+              h={5}
+              p={0}
+              alignItems="center"
+              justifyContent="center"
+              rounded="full"
+              bg="rose.400"
+            >
+              <Text fontSize={10} lineHeight={14} color="primary.100">
+                {numberOfRegularNotes}
+              </Text>
+            </Badge>
+          )}
         </Button>
 
         <Button
@@ -197,22 +196,24 @@ export function NoteContainerByDate() {
         >
           <Text color={position === 2 ? "primary.400" : "gray.400"}>Ruim</Text>
 
-          <Badge
-            position="absolute"
-            top={-10}
-            right={-30}
-            w={5}
-            h={5}
-            p={0}
-            alignItems="center"
-            justifyContent="center"
-            rounded="full"
-            bg="warning.400"
-          >
-            <Text fontSize={10} lineHeight={14} color="primary.100">
-              20
-            </Text>
-          </Badge>
+          {numberOfBadNotes > 0 && (
+            <Badge
+              position="absolute"
+              top={-10}
+              right={-30}
+              w={5}
+              h={5}
+              p={0}
+              alignItems="center"
+              justifyContent="center"
+              rounded="full"
+              bg="warning.400"
+            >
+              <Text fontSize={10} lineHeight={14} color="primary.100">
+                {numberOfBadNotes}
+              </Text>
+            </Badge>
+          )}
         </Button>
 
         <Animated.View
@@ -241,12 +242,12 @@ export function NoteContainerByDate() {
                 data={notes}
                 keyExtractor={(item) => item.id}
                 renderItem={(note) => {
-                  if (note.item.type === item) {
+                  if (note.item.note_type === item) {
                     return (
                       <NoteCard
                         id={note.item.id}
                         title={note.item.title}
-                        type={note.item.type as TypesProps}
+                        type={note.item.note_type as TypesProps}
                       />
                     );
                   } else {
