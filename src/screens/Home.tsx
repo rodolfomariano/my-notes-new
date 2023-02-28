@@ -109,7 +109,7 @@ export function Home() {
       </Text>
 
       <Text textAlign="center" fontSize={20} color="primary.400">
-        {formatFullDate(daySelected)}
+        {formatFullDate(daySelected.toDate())}
       </Text>
 
       <NoteContainerByDate date={daySelected.toDate()} />

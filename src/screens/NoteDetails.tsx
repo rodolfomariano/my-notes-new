@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigation, useRoute } from "@react-navigation/native";
 
 import {
@@ -10,11 +10,16 @@ import {
   Modal,
   Radio,
   ScrollView,
+  Spinner,
   Stack,
   Text,
   TextArea,
   VStack,
 } from "native-base";
+
+import firestore from "@react-native-firebase/firestore";
+
+import auth, { FirebaseAuthTypes } from "@react-native-firebase/auth";
 
 import { AntDesign, Feather } from "@expo/vector-icons";
 
@@ -22,17 +27,41 @@ import { formatFullDate } from "@utils/formatDates";
 
 import { Header } from "@components/Header";
 import { Input } from "@components/Input";
+import { getToday } from "@utils/getWeekDays";
+
+interface Note {
+  title: "string";
+  description: "string";
+  note_type: "good" | "regular" | "bad" | "";
+  created_at?: {
+    nanoseconds: number;
+    seconds: number;
+  };
+  updated_at?: Date;
+}
 
 interface RouteProps {
   id: string;
 }
 
 export function NoteDetails() {
+  const [user, setUser] = useState<FirebaseAuthTypes.User | null>(null);
   const [showModalEditNote, setShowModalEditNote] = useState(false);
   const [showAlertRemoveNote, setShowAlertRemoveNote] = useState(false);
-  const [radioSelected, seRadioSelected] = useState("regular");
+
+  const [note, setNote] = useState({} as Note);
+  const [noteTitle, setNoteTitle] = useState("");
+  const [noteDescription, setNoteDescription] = useState("");
+  const [radioSelected, seRadioSelected] = useState("");
+
+  const [isUpdateNote, setIsUpdateNote] = useState(false);
+  const [isDeleteNote, setIsDeleteNote] = useState(false);
 
   const navigation = useNavigation();
+
+  const editDate = note.created_at
+    ? new Date(note!.created_at!.seconds * 1000)
+    : new Date();
 
   const route = useRoute();
   const { id } = route.params as RouteProps;
@@ -41,9 +70,93 @@ export function NoteDetails() {
 
   const cancelRef = useRef(null);
 
+  const toDay = getToday().toDate();
+
   function handleGoBack() {
     navigation.goBack();
   }
+
+  async function getNoteDetailsById() {
+    if (user?.email) {
+      const userNote = await firestore()
+        .collection(user.email)
+        .doc(id)
+        .onSnapshot((doc) => {
+          setNote({
+            title: doc.data()?.title,
+            description: doc.data()?.description,
+            note_type: doc.data()?.note_type,
+            created_at: doc.data()?.created_at,
+          });
+
+          return {
+            id: doc.id,
+            ...doc.data(),
+          };
+        });
+
+      return () => userNote();
+    }
+  }
+
+  async function handleEditNoteById() {
+    setIsUpdateNote(true);
+
+    try {
+      if (user?.email) {
+        const userNote = await firestore()
+          .collection(user.email)
+          .doc(id)
+          .update({
+            title: noteTitle,
+            description: noteDescription,
+            note_type: radioSelected,
+            updated_at: toDay,
+          });
+
+        setShowModalEditNote(false);
+      }
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setIsUpdateNote(false);
+    }
+  }
+
+  async function handleRemoveNoteById() {
+    setIsDeleteNote(true);
+
+    try {
+      if (user?.email) {
+        const userNote = await firestore()
+          .collection(user.email)
+          .doc(id)
+          .delete();
+      }
+      navigation.goBack();
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setIsDeleteNote(false);
+      setShowAlertRemoveNote(false);
+    }
+  }
+
+  useEffect(() => {
+    const subscriber = auth().onAuthStateChanged(setUser);
+
+    return subscriber;
+  }, []);
+
+  useEffect(() => {
+    getNoteDetailsById();
+  }, [user]);
+
+  useEffect(() => {
+    setNoteTitle(note.title);
+    setNoteDescription(note.description);
+    seRadioSelected(note.note_type);
+  }, [note]);
 
   return (
     <>
@@ -64,7 +177,7 @@ export function NoteDetails() {
           </Button>
 
           <Text textAlign="center" mt={8} fontSize={16} color="gray.500">
-            {formatFullDate(new Date())}
+            {note.created_at && formatFullDate(editDate)}
           </Text>
 
           <Text
@@ -74,7 +187,7 @@ export function NoteDetails() {
             textAlign="center"
             lineHeight={30}
           >
-            Fui bem na entrevista de emprego
+            {note.title}
           </Text>
 
           <Text mt={16} mb={6} fontSize={16} color="gray.600">
@@ -83,23 +196,7 @@ export function NoteDetails() {
 
           <ScrollView>
             <Text fontSize="sm" color="gray.500">
-              Todos nós já nos sentimos nervosos depois de sair de uma
-              entrevista de emprego ou de estágio, especialmente nas situações
-              em que a resposta sobre a candidatura demora vários dias ou até
-              semanas para chegar. Provavelmente, você já se perguntou “quais
-              são os sinais de que passei na entrevista?”. Afinal, se você os
-              conhecer, pode ir mais relaxado. Todos nós já nos sentimos
-              nervosos depois de sair de uma entrevista de emprego ou de
-              estágio, especialmente nas situações em que a resposta sobre a
-              candidatura demora vários dias ou até semanas para chegar.
-              Provavelmente, você já se perguntou “quais são os sinais de que
-              passei na entrevista?”. Afinal, se você os conhecer, pode ir mais
-              relaxado. Todos nós já nos sentimos nervosos depois de sair de uma
-              entrevista de emprego ou de estágio, especialmente nas situações
-              em que a resposta sobre a candidatura demora vários dias ou até
-              semanas para chegar. Provavelmente, você já se perguntou “quais
-              são os sinais de que passei na entrevista?”. Afinal, se você os
-              conhecer, pode ir mais relaxado.
+              {note.description}
             </Text>
           </ScrollView>
         </VStack>
@@ -138,6 +235,8 @@ export function NoteDetails() {
             <Text color="gray.400" fontSize="xs">
               Editar
             </Text>
+
+            <Text color="gray.500">{note.title}</Text>
           </Modal.Header>
 
           <Modal.Body>
@@ -145,6 +244,9 @@ export function NoteDetails() {
               <Input
                 label="Titulo"
                 placeholder="Digite um titulo para a nota"
+                value={noteTitle}
+                defaultValue={note.title}
+                onChangeText={setNoteTitle}
               />
             </FormControl>
             <FormControl>
@@ -168,12 +270,16 @@ export function NoteDetails() {
                   backgroundColor: "rgba(243, 239, 252, 04)",
                 }}
                 _focus={{ borderColor: "primary.400", borderWidth: 2 }}
+                defaultValue={note.description}
+                value={noteDescription}
+                onChangeText={setNoteDescription}
               />
             </FormControl>
             <Radio.Group
               name="myRadioGroup"
               accessibilityLabel="favorite number"
               value={radioSelected}
+              defaultValue={note.note_type}
               onChange={(nextValue) => {
                 seRadioSelected(nextValue);
               }}
@@ -237,11 +343,16 @@ export function NoteDetails() {
               <Button
                 bg="primary.400"
                 _pressed={{ bg: "primary.500" }}
-                onPress={() => {
-                  // setShowModalNewNote(false);
-                }}
+                onPress={handleEditNoteById}
               >
-                Adicionar
+                {isUpdateNote ? (
+                  <Spinner
+                    size="sm"
+                    accessibilityLabel="Adicionando nova anotação"
+                  />
+                ) : (
+                  "Editar"
+                )}
               </Button>
             </Button.Group>
           </Modal.Footer>
@@ -261,7 +372,7 @@ export function NoteDetails() {
               Remover
             </Text>
             <Text color="gray.500" fontSize="lg">
-              {/* {title} */}
+              {noteTitle}
             </Text>
           </AlertDialog.Header>
 
@@ -279,8 +390,15 @@ export function NoteDetails() {
               >
                 Cancelar
               </Button>
-              <Button colorScheme="danger" onPress={onCloseAlert}>
-                Remover
+              <Button colorScheme="danger" onPress={handleRemoveNoteById}>
+                {isDeleteNote ? (
+                  <Spinner
+                    size="sm"
+                    accessibilityLabel="Adicionando nova anotação"
+                  />
+                ) : (
+                  "Remover"
+                )}
               </Button>
             </Button.Group>
           </AlertDialog.Footer>

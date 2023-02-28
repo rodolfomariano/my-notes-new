@@ -3,7 +3,7 @@ import isoWeekday from "dayjs/plugin/isoWeek";
 
 dayjs.extend(isoWeekday);
 
-export function formatFullDate(date: Dayjs) {
+export function formatFullDate(date: Date) {
   const day = dayjs(date).date();
   const month = dayjs(date).format("MMMM");
   const year = dayjs(date).year();

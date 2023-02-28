@@ -35,12 +35,23 @@ interface ButtonAddNoteProps extends IIconButtonProps {
 export function ButtonAddNote({ date, ...rest }: ButtonAddNoteProps) {
   const [user, setUser] = useState<FirebaseAuthTypes.User | null>(null);
   const [showModalNewNote, setShowModalNewNote] = useState(false);
-  const [radioSelected, seRadioSelected] = useState("regular");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [radioSelected, seRadioSelected] = useState("regular");
   const [isAddNewNote, setIsAddNewNote] = useState(false);
 
   const { handleType } = useStorage();
+
+  function clearForms() {
+    setTitle("");
+    setDescription("");
+    seRadioSelected("regular");
+  }
+
+  function handleCloseModalNewNote() {
+    clearForms();
+    setShowModalNewNote(false);
+  }
 
   function handleAddNewNote() {
     setIsAddNewNote(true);
@@ -55,7 +66,11 @@ export function ButtonAddNote({ date, ...rest }: ButtonAddNoteProps) {
           created_at: date.toDate(),
           updated_at: null,
         })
-        .then(() => Alert.alert("Nota", "Nota adicionada com sucesso!"))
+        .then(() => {
+          clearForms();
+
+          return setShowModalNewNote(false);
+        })
         .catch((error) => console.log(error))
         .finally(() => setIsAddNewNote(false));
     }
@@ -109,10 +124,7 @@ export function ButtonAddNote({ date, ...rest }: ButtonAddNoteProps) {
         />
       )}
 
-      <Modal
-        isOpen={showModalNewNote}
-        onClose={() => setShowModalNewNote(false)}
-      >
+      <Modal isOpen={showModalNewNote} onClose={handleCloseModalNewNote}>
         <Modal.Content>
           <Modal.CloseButton />
 
@@ -121,7 +133,7 @@ export function ButtonAddNote({ date, ...rest }: ButtonAddNoteProps) {
               Adicionar nova anotação em:
             </Text>
             <Text color="gray.500" fontSize="lg">
-              {formatFullDate(date)}
+              {formatFullDate(date.toDate())}
             </Text>
           </Modal.Header>
 
@@ -217,9 +229,7 @@ export function ButtonAddNote({ date, ...rest }: ButtonAddNoteProps) {
               <Button
                 variant="ghost"
                 colorScheme="blueGray"
-                onPress={() => {
-                  setShowModalNewNote(false);
-                }}
+                onPress={handleCloseModalNewNote}
               >
                 Cancelar
               </Button>
