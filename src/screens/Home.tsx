@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-import { Dayjs } from "dayjs";
+import dayjs, { Dayjs } from "dayjs";
 
 import {
   NativeScrollEvent,
@@ -26,14 +26,29 @@ import {
 
 import auth, { FirebaseAuthTypes } from "@react-native-firebase/auth";
 
+import firestore from "@react-native-firebase/firestore";
+
 import { Header } from "@components/Header";
 import { DateCard } from "@components/DateCard";
 import { NoteContainerByDate } from "@components/NoteContainerByDate";
 import { ButtonAddNote } from "@components/ButtonAddNote";
 import { setFirstAccess } from "@storage/firstAccess";
 
+interface Note {
+  id: "string";
+  title: "string";
+  description: "string";
+  note_type: "good" | "regular" | "bad";
+  created_at?: {
+    nanoseconds: number;
+    seconds: number;
+  };
+  updated_at: "string" | null;
+}
+
 export function Home() {
   const [user, setUser] = useState<FirebaseAuthTypes.User | null>(null);
+  const [notes, setNotes] = useState<Note[]>([]);
   const [daySelected, setDaySelected] = useState<Dayjs>(getToday());
   const [today, setToday] = useState<Dayjs>(getToday());
   const [days, setDays] = useState<Dayjs[]>(getCurrencyWeekDays());
@@ -56,6 +71,24 @@ export function Home() {
     return setDays((state) => [...state, ...daysOfNextWeek]);
   }
 
+  async function getAllNotes() {
+    if (user?.email) {
+      const userNotes = await firestore()
+        .collection(user.email)
+        .onSnapshot((querySnapshop) => {
+          const data = querySnapshop.docs.map((note) => {
+            return {
+              id: note.id,
+              ...note.data(),
+            };
+          }) as Note[];
+          setNotes(data);
+        });
+
+      return () => userNotes();
+    }
+  }
+
   useEffect(() => {
     const subscriber = auth().onAuthStateChanged(setUser);
 
@@ -64,6 +97,10 @@ export function Home() {
     }
 
     return subscriber;
+  }, [user]);
+
+  useEffect(() => {
+    getAllNotes();
   }, [user]);
 
   return (
@@ -94,6 +131,33 @@ export function Home() {
                   daySelected.format("DD/MM/YYYY") === item.format("DD/MM/YYYY")
                 }
                 onPress={() => handleSelectDate(item)}
+                haveGoodNote={
+                  !!notes.find(
+                    (note) =>
+                      dayjs(note!.created_at!.seconds * 1000).format(
+                        "DD/MM/YYYY"
+                      ) === item.format("DD/MM/YYYY") &&
+                      note.note_type === "good"
+                  )
+                }
+                haveRegularNote={
+                  !!notes.find(
+                    (note) =>
+                      dayjs(note!.created_at!.seconds * 1000).format(
+                        "DD/MM/YYYY"
+                      ) === item.format("DD/MM/YYYY") &&
+                      note.note_type === "regular"
+                  )
+                }
+                haveBadNote={
+                  !!notes.find(
+                    (note) =>
+                      dayjs(note!.created_at!.seconds * 1000).format(
+                        "DD/MM/YYYY"
+                      ) === item.format("DD/MM/YYYY") &&
+                      note.note_type === "bad"
+                  )
+                }
               />
             );
           }}

@@ -1,9 +1,17 @@
 import { Dimensions } from "react-native";
-import { Center, Pressable, IPressableProps, Text } from "native-base";
+import {
+  Center,
+  Pressable,
+  IPressableProps,
+  Text,
+  Box,
+  HStack,
+} from "native-base";
 
 import { Dayjs } from "dayjs";
 
 import { getToday } from "@utils/getWeekDays";
+import { useEffect, useState } from "react";
 
 interface DateCardProps extends IPressableProps {
   month: string;
@@ -12,6 +20,9 @@ interface DateCardProps extends IPressableProps {
   isToday?: boolean;
   isSelected?: boolean;
   date: Dayjs;
+  haveGoodNote?: boolean;
+  haveRegularNote?: boolean;
+  haveBadNote?: boolean;
 }
 
 export function DateCard({
@@ -21,6 +32,9 @@ export function DateCard({
   isToday,
   isSelected = false,
   date,
+  haveGoodNote,
+  haveRegularNote,
+  haveBadNote,
   ...rest
 }: DateCardProps) {
   const { width } = Dimensions.get("window");
@@ -68,6 +82,49 @@ export function DateCard({
         <Text fontSize={16} color={isToday ? "primary.100" : "primary.400"}>
           {day}
         </Text>
+
+        <HStack
+          position="absolute"
+          top={-3}
+          py="2px"
+          px="2px"
+          flexDirection="row"
+          justifyContent="center"
+          space="2px"
+        >
+          {haveGoodNote && (
+            <Box
+              w={2}
+              h={2}
+              rounded="full"
+              bg="primary.400"
+              borderWidth="1px"
+              borderColor="primary.100"
+            />
+          )}
+
+          {haveRegularNote && (
+            <Box
+              w={2}
+              h={2}
+              rounded="full"
+              bg="rose.400"
+              borderWidth="1px"
+              borderColor="primary.100"
+            />
+          )}
+
+          {haveBadNote && (
+            <Box
+              w={2}
+              h={2}
+              rounded="full"
+              bg="warning.400"
+              borderWidth="1px"
+              borderColor="primary.100"
+            />
+          )}
+        </HStack>
       </Center>
     </Pressable>
   );
